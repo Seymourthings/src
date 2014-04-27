@@ -1,5 +1,11 @@
 package code;
 
+import gui.GUI;
+import gui.ButtonActionListener;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -7,9 +13,20 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 import code.interfaces.IGame;
 
 public class Game implements IGame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
 	 * Handles set up for the game and includes rules during gameplay
 	 * 
@@ -22,12 +39,14 @@ public class Game implements IGame {
 	private int _turnsPassed;
 	private char[] _vowels;
 	private ArrayList<Player> _list;
-	private ArrayList<Tile> _bag;
 	private String _wordFormed;
 	private BagOfTiles _bg;
 	private Board _b;
+	private Board _identicalBoard;
 	private boolean _started;
-	private int _turn;
+	private JButton _button;
+	private JTextField _textField;
+	private JFrame _frame;
 
 	/**
 	 * Constructor for the game class creates Arrays, ArrayLists, an Iterator,
@@ -38,10 +57,28 @@ public class Game implements IGame {
 	 */
 
 	public Game() {
+		new Board();
 		_dictionary = new Dictionary();
 		_vowels = new char[] { 'A', 'E', 'I', 'O', 'U', 'Y' };
 		_bg = new BagOfTiles();
-		_b = new Board();
+		ImageIcon image = new ImageIcon("Description/RegisterPic.jpg");
+		_frame = new JFrame();
+		JPanel panel = new JPanel();
+		JLabel label = new JLabel(image);
+		_textField = new JTextField("Enter Your Name", 40);
+		_button = new JButton("Register!");
+		_button.addActionListener(new ButtonActionListener(this));
+		_textField.setEditable(true);
+		panel.setLayout(new BorderLayout());
+		_frame.setTitle("Register Players");
+		panel.add(label, "North");
+		panel.add(_button, "West");
+		panel.add(_textField, "Center");
+		_frame.add(panel);
+		_frame.pack();
+		_frame.setVisible(true);
+		_frame.setLocationRelativeTo(null);
+		_frame.setResizable(false);
 		Collections.shuffle(_bg._tileBag);
 		_currentTurn = 0;
 		_turnsPassed = 0;
@@ -50,8 +87,9 @@ public class Game implements IGame {
 		_started = false;
 		_simpleList = new LinkedList<SimpleImmutableEntry<String, Integer>>();
 	}
-	public void tileMultiplier(){
-	
+
+	public void tileMultiplier() {
+
 	}
 
 	/**
@@ -176,7 +214,23 @@ public class Game implements IGame {
 	public Board getBoard() {
 		return _b;
 	}
-
+	public Board multipyBoards(){
+		while(_identicalBoard!=null){
+		if(_b.getNullRows()==_identicalBoard.getNullRows() &&
+				_b.getNullColms()==_identicalBoard.getNullColms()){
+			System.out.println(_b.getNullRows());
+			System.out.println(_identicalBoard.getNullRows());
+			System.out.println(_b.getNullColms());
+			System.out.println(_identicalBoard.getNullColms());
+			_identicalBoard = new Board();
+			return _identicalBoard;
+		}
+		else{
+			_identicalBoard = new Board();
+		}
+	}
+		return null; 
+}
 	public Player getPlayer() {
 		return _list.get(_currentTurn);
 	}
@@ -216,8 +270,9 @@ public class Game implements IGame {
 	 */
 	@Override
 	public boolean register(Player player) {
-		if (_started == false && player.getName() != "") {
+		if (_started == false && player.getName() != "" && _list.size() <= 4) {
 			_list.add(player);
+			new GUI();
 			return true;
 		}
 		if (_started == true || player.getName() == "") {
@@ -226,7 +281,9 @@ public class Game implements IGame {
 		return false;
 
 	}
-
+	public JTextField getTextField(){
+		return _textField;
+	}
 	/**
 	 * Starts the game if more than 1 Players are registered and randomizes
 	 * their order. Returns true if the game successfully starts, false
@@ -242,9 +299,10 @@ public class Game implements IGame {
 			Collections.shuffle(_list);
 			for (int i = 0; i < _list.size(); i++) {
 				giveTiles(_list.get(i));
+
 			}
 			_b.setHomeSquare();
-			_turn = 1;
+			//_turn = 1;
 			_started = true;
 		}
 		return _started;
